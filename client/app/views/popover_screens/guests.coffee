@@ -11,6 +11,7 @@ module.exports = class GuestPopoverScreen extends PopoverScreenView
     events:
         "click .add-new-guest": "onNewGuest"
         "click .guest-delete": "onRemoveGuest"
+        "click .guest-share-w-cozy": "onShareWithCozy"
         'keyup input[name="guest-name"]': "onKeyup"
 
 
@@ -93,6 +94,31 @@ module.exports = class GuestPopoverScreen extends PopoverScreenView
 
         # Inefficient way to refresh the list, but it's okay since it will never
         # be a big list.
+        @render()
+
+
+    # XXX Check if the cozy url has been filled correctly
+    #     (there are two things to check: it has been filled AND it is correct)
+    # XXX Being able to switch back to sending e-mail invitation instead
+    #
+    # Sharing an invitation directly between Cozy instances.
+    onShareWithCozy: (event) ->
+        # Get the guest
+        index = @$(event.target).parents('li').attr 'data-index'
+
+        # Get the contact information of the guest
+        guests = @model.get('attendees') or []
+        contact = app.contacts.get guests[index].contactid
+
+        # Same as for the function onNewGuest: the clone is required for the
+        # view to be refreshed
+        guests = _.clone guests
+        # We add the information regarding the cozy: we change the email field
+        # so that the user has a visual feedback
+        guests[index].email = "Cozy: " + contact.get "name"
+        guests[index].cozy = contact.get "cozy"
+        @model.set 'attendees', guests
+        # We force the refresh
         @render()
 
 

@@ -149,6 +149,7 @@
   "screen guest input placeholder": "Email address",
   "screen guest add button": "Add",
   "screen guest remove tooltip": "Cancel the invitation",
+  "screen guest share with cozy tooltip": "Share the invitation with the guest's cozy",
   "screen description title": "Description",
   "screen alert title empty": "Alert",
   "screen alert title": "%{smart_count} alert |||| %{smart_count} alerts",
