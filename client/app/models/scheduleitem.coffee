@@ -329,7 +329,8 @@ module.exports = class ScheduleItem extends Backbone.Model
             callback false
         else
             guestsList = guestsToInform.join ', '
-            content = "#{t 'send mails question'} #{guestsList}"
+            # content = "#{t 'send mails question'} #{guestsList}"
+            content = "#{t 'send invitations question'} #{guestsList}"
             Modal.confirm t('modal send mails'), content, \
                 t('yes'), t('no'), callback
 

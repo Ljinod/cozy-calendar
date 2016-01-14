@@ -186,6 +186,7 @@
   "screen recurrence ends until placeholder": "Until [date]",
   "screen recurrence summary label": "Summary",
   "send mails question": "Send a notification email to:",
+  "send invitations question": "Send an invitation - either via mail or via their Cozy - to:",
   "modal send mails": "Send a notification",
   "yes": "Yes",
   "no": "No",
