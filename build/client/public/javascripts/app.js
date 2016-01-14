@@ -6,19 +6,19 @@
 
   var modules = {};
   var cache = {};
-  var has = ({}).hasOwnProperty;
-
   var aliases = {};
+  var has = ({}).hasOwnProperty;
 
   var endsWith = function(str, suffix) {
     return str.indexOf(suffix, str.length - suffix.length) !== -1;
   };
 
+  var _cmp = 'components/';
   var unalias = function(alias, loaderPath) {
     var start = 0;
     if (loaderPath) {
-      if (loaderPath.indexOf('components/' === 0)) {
-        start = 'components/'.length;
+      if (loaderPath.indexOf(_cmp) === 0) {
+        start = _cmp.length;
       }
       if (loaderPath.indexOf('/', start) > 0) {
         loaderPath = loaderPath.substring(start, loaderPath.indexOf('/', start));
@@ -26,33 +26,32 @@
     }
     var result = aliases[alias + '/index.js'] || aliases[loaderPath + '/deps/' + alias + '/index.js'];
     if (result) {
-      return 'components/' + result.substring(0, result.length - '.js'.length);
+      return _cmp + result.substring(0, result.length - '.js'.length);
     }
     return alias;
   };
 
-  var expand = (function() {
-    var reg = /^\.\.?(\/|$)/;
-    return function(root, name) {
-      var results = [], parts, part;
-      parts = (reg.test(name) ? root + '/' + name : name).split('/');
-      for (var i = 0, length = parts.length; i < length; i++) {
-        part = parts[i];
-        if (part === '..') {
-          results.pop();
-        } else if (part !== '.' && part !== '') {
-          results.push(part);
-        }
+  var _reg = /^\.\.?(\/|$)/;
+  var expand = function(root, name) {
+    var results = [], part;
+    var parts = (_reg.test(name) ? root + '/' + name : name).split('/');
+    for (var i = 0, length = parts.length; i < length; i++) {
+      part = parts[i];
+      if (part === '..') {
+        results.pop();
+      } else if (part !== '.' && part !== '') {
+        results.push(part);
       }
-      return results.join('/');
-    };
-  })();
+    }
+    return results.join('/');
+  };
+
   var dirname = function(path) {
     return path.split('/').slice(0, -1).join('/');
   };
 
   var localRequire = function(path) {
-    return function(name) {
+    return function expanded(name) {
       var absolute = expand(dirname(path), name);
       return globals.require(absolute, path);
     };
@@ -107,6 +106,7 @@
   };
 
   require.brunch = true;
+  require._cache = cache;
   globals.require = require;
 })();
 require.register("application", function(exports, require, module) {
@@ -2312,6 +2312,7 @@ module.exports = {
   "screen guest input placeholder": "Email address",
   "screen guest add button": "Add",
   "screen guest remove tooltip": "Cancel the invitation",
+  "screen guest share with cozy tooltip": "Share the invitation with the guest's cozy",
   "screen description title": "Description",
   "screen alert title empty": "Alert",
   "screen alert title": "%{smart_count} alert |||| %{smart_count} alerts",
@@ -2348,6 +2349,7 @@ module.exports = {
   "screen recurrence ends until placeholder": "Until [date]",
   "screen recurrence summary label": "Summary",
   "send mails question": "Send a notification email to:",
+  "send invitations question": "Send an invitation - either via mail or via their Cozy - to:",
   "modal send mails": "Send a notification",
   "yes": "Yes",
   "no": "No",
@@ -3732,7 +3734,7 @@ module.exports = ScheduleItem = (function(superClass) {
       callback(false);
     } else {
       guestsList = guestsToInform.join(', ');
-      content = (t('send mails question')) + " " + guestsList;
+      content = (t('send invitations question')) + " " + guestsList;
       Modal.confirm(t('modal send mails'), content, t('yes'), t('no'), callback);
     }
     this.startDateChanged = false;
@@ -5820,6 +5822,7 @@ module.exports = GuestPopoverScreen = (function(superClass) {
   GuestPopoverScreen.prototype.events = {
     "click .add-new-guest": "onNewGuest",
     "click .guest-delete": "onRemoveGuest",
+    "click .guest-share-w-cozy": "onShareWithCozy",
     'keyup input[name="guest-name"]': "onKeyup"
   };
 
@@ -5897,6 +5900,18 @@ module.exports = GuestPopoverScreen = (function(superClass) {
     index = this.$(event.target).parents('li').attr('data-index');
     guests = this.model.get('attendees') || [];
     guests.splice(index, 1);
+    this.model.set('attendees', guests);
+    return this.render();
+  };
+
+  GuestPopoverScreen.prototype.onShareWithCozy = function(event) {
+    var contact, guests, index;
+    index = this.$(event.target).parents('li').attr('data-index');
+    guests = this.model.get('attendees') || [];
+    contact = app.contacts.get(guests[index].contactid);
+    guests = _.clone(guests);
+    guests[index].email = "Cozy: " + contact.get("name");
+    guests[index].cozy = contact.get("cozy");
     this.model.set('attendees', guests);
     return this.render();
   };
@@ -7244,7 +7259,7 @@ else if ( status == 'NEED-ACTION')
 {
 buf.push("<i class=\"fa fa-exclamation-circle blue\"></i>");
 }
-buf.push("<div class=\"guest-label\">" + (jade.escape(null == (jade_interp = email) ? "" : jade_interp)) + "</div><button" + (jade.attr("title", t('screen guest remove tooltip'), true, false)) + " role=\"button\" class=\"guest-delete fa fa-trash-o\"></button></div></li>");;return buf.join("");
+buf.push("<div class=\"guest-label\">" + (jade.escape(null == (jade_interp = email) ? "" : jade_interp)) + "</div><button" + (jade.attr("title", t('screen guest remove tooltip'), true, false)) + " role=\"button\" class=\"guest-delete fa fa-trash-o\"></button><button" + (jade.attr("title", t('screen guest share with cozy tooltip'), true, false)) + " role=\"button\" class=\"guest-share-w-cozy fa fa-cloud\"></button></div></li>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
