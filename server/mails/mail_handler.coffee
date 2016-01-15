@@ -34,17 +34,21 @@ module.exports.sendInvitations = (event, dateChanged, callback) ->
 
             # only process relevant guests, quits otherwise
             shouldSend = guest.status is 'INVITATION-NOT-SENT' or \
-                        (guest.status is 'ACCEPTED' and dateChanged)
+                         (not guest.sharewcozy and \
+                         (guest.status is 'ACCEPTED' and dateChanged))
             return done() unless shouldSend
 
             # Check if the invitation should be sent through the cozy, if not
             # then it's by mail
-            if guest.cozy?
+            if guest.sharewcozy is true
+
+                console.log "[DEBUG] status is: " + guest.status
+                if guest.status isnt 'INVITATION-NOT-SENT'
+                    return done()
 
                 console.log "[DEBUG] Sending to Cozy: " + guest.cozy
 
-                # XXX Check if the cozy url is as expected. Its format should
-                # be: http://127.0.0.1:9104
+                # Send a request to the datasystem
                 client = new Client "http://localhost:9101"
 
                 # The format of the req.body to send must match:
@@ -66,14 +70,14 @@ module.exports.sendInvitations = (event, dateChanged, callback) ->
                     sync: guest.sync or false
                     permissions: {Event: {description: "Sharing"}}
 
+                guest.status = 'NEEDS-ACTION'
+                needSaving = true
+
                 client.post "sharing/", data, (err, res, body) ->
-                    callback err
+                    done err
 
             # Prepare mail
             else
-
-                console.log "[DEBUG] Sending an email to: " + user.email
-
                 if dateChanged
                     htmlTemplate = localization.getEmailTemplate 'mail_update'
                     subjectKey   = 'email update title'

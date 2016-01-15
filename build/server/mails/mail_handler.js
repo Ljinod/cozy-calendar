@@ -52,7 +52,11 @@ module.exports.sendInvitations = function(event, dateChanged, callback) {
       if (!shouldSend) {
         return done();
       }
-      if (guest.cozy != null) {
+      if (guest.sharewcozy === true) {
+        console.log("[DEBUG] status is: " + guest.status);
+        if (guest.status !== 'INVITATION-NOT-SENT') {
+          return done();
+        }
         console.log("[DEBUG] Sending to Cozy: " + guest.cozy);
         client = new Client("http://localhost:9101");
         data = {
@@ -70,11 +74,12 @@ module.exports.sendInvitations = function(event, dateChanged, callback) {
             }
           }
         };
+        guest.status = 'NEEDS-ACTION';
+        needSaving = true;
         return client.post("sharing/", data, function(err, res, body) {
-          return callback(err);
+          return done(err);
         });
       } else {
-        console.log("[DEBUG] Sending an email to: " + user.email);
         if (dateChanged) {
           htmlTemplate = localization.getEmailTemplate('mail_update');
           subjectKey = 'email update title';

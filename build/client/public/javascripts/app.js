@@ -3729,7 +3729,7 @@ module.exports = ScheduleItem = (function(superClass) {
         return guest.status === 'INVITATION-NOT-SENT' || (guest.status === 'ACCEPTED' && this.startDateChanged);
       }
     }).map(function(guest) {
-      return guest.email;
+      return guest.label;
     });
     if (guestsToInform.length === 0) {
       callback(false);
@@ -6366,11 +6366,11 @@ module.exports = MainPopoverScreen = (function(superClass) {
     if (guests.length === 0) {
       return t("add guest button");
     } else if (guests.length === 1) {
-      return guests[0].email;
+      return guests[0].label;
     } else {
       numOthers = guests.length - 1;
       options = {
-        first: guests[0].email,
+        first: guests[0].label,
         smart_count: numOthers
       };
       return t("guests list", options);
