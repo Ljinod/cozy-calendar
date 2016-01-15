@@ -12,6 +12,7 @@ module.exports = class GuestPopoverScreen extends PopoverScreenView
         "click .add-new-guest": "onNewGuest"
         "click .guest-delete": "onRemoveGuest"
         "click .guest-share-w-cozy": "onShareWithCozy"
+        "click .guest-share-w-email": "onShareWithEmail"
         'keyup input[name="guest-name"]': "onKeyup"
 
 
@@ -108,15 +109,40 @@ module.exports = class GuestPopoverScreen extends PopoverScreenView
 
         # Get the contact information of the guest
         guests = @model.get('attendees') or []
-        contact = app.contacts.get guests[index].contactid
 
         # Same as for the function onNewGuest: the clone is required for the
         # view to be refreshed
         guests = _.clone guests
-        # We add the information regarding the cozy: we change the email field
+        guest = guests[index]
+        # We add the information regarding the cozy: we change the label field
         # so that the user has a visual feedback
-        guests[index].email = "Cozy: " + contact.get "name"
-        guests[index].cozy = contact.get "cozy"
+        guest.sharewcozy = true
+        guest.label = "Cozy: " + guest.name
+        # XXX Required by couchdb to make the replication synchronous
+        guest.sync = true
+        @model.set 'attendees', guests
+        # We force the refresh
+        @render()
+
+
+    # If the user want to revert back to sharing the invitation using an email
+    # instead of the guest Cozy.
+    onShareWithEmail: (event) ->
+        # Get the guest
+        index = @$(event.target).parents('li').attr 'data-index'
+
+        # Get the contact information of the guest
+        guests = @model.get('attendees') or []
+
+        # Same as for the function onNewGuest: the clone is required for the
+        # view to be refreshed
+        guests = _.clone guests
+        guest = guests[index]
+        # We add the information regarding the cozy: we change the label field
+        # so that the user has a visual feedback
+        guest.sharewcozy = false
+        guest.label = guest.email
+
         @model.set 'attendees', guests
         # We force the refresh
         @render()
@@ -136,6 +162,7 @@ module.exports = class GuestPopoverScreen extends PopoverScreenView
         if email.length > 0
             guests = @model.get('attendees') or []
             if not _.findWhere(guests, email: email)
+                contact = app.contacts.get contactID
                 # Clone the source array, otherwise it's not considered as
                 # changed because it changes the model's attributes
                 guests = _.clone guests
@@ -143,7 +170,11 @@ module.exports = class GuestPopoverScreen extends PopoverScreenView
                     key: random.randomString()
                     status: 'INVITATION-NOT-SENT'
                     email: email
+                    label: email
                     contactid: contactID
+                    cozy: contact.get 'cozy'
+                    name: contact.get 'name'
+                    sharewcozy: false
                 @model.set 'attendees', guests
 
                 # Inefficient way to refresh the list, but it's okay since

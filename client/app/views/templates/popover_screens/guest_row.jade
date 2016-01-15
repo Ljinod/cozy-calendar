@@ -7,6 +7,11 @@ li(data-index=index)
         else if status == 'NEED-ACTION'
             i.fa.fa-exclamation-circle.blue
 
-        .guest-label= email
+        .guest-label= label
         button.guest-delete.fa.fa-trash-o(title=t('screen guest remove tooltip'), role="button")
-        button.guest-share-w-cozy.fa.fa-cloud(title=t('screen guest share with cozy tooltip'), role="button")
+
+        unless cozy == '?'
+            if sharewcozy
+                button.guest-share-w-email.fa.fa-envelope-o(title=t('screen guest share with email tooltip'), role="button")
+            else
+                button.guest-share-w-cozy.fa.fa-cloud(title=t('screen guest share with cozy tooltip'), role="button")

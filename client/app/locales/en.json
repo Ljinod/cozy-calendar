@@ -150,6 +150,7 @@
   "screen guest add button": "Add",
   "screen guest remove tooltip": "Cancel the invitation",
   "screen guest share with cozy tooltip": "Share the invitation with the guest's cozy",
+  "screen guest share with email tooltip": "Send the invitation as an e-mail",
   "screen description title": "Description",
   "screen alert title empty": "Alert",
   "screen alert title": "%{smart_count} alert |||| %{smart_count} alerts",

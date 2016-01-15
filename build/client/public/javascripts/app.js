@@ -2313,6 +2313,7 @@ module.exports = {
   "screen guest add button": "Add",
   "screen guest remove tooltip": "Cancel the invitation",
   "screen guest share with cozy tooltip": "Share the invitation with the guest's cozy",
+  "screen guest share with email tooltip": "Send the invitation as an e-mail",
   "screen description title": "Description",
   "screen alert title empty": "Alert",
   "screen alert title": "%{smart_count} alert |||| %{smart_count} alerts",
@@ -5823,6 +5824,7 @@ module.exports = GuestPopoverScreen = (function(superClass) {
     "click .add-new-guest": "onNewGuest",
     "click .guest-delete": "onRemoveGuest",
     "click .guest-share-w-cozy": "onShareWithCozy",
+    "click .guest-share-w-email": "onShareWithEmail",
     'keyup input[name="guest-name"]': "onKeyup"
   };
 
@@ -5905,19 +5907,32 @@ module.exports = GuestPopoverScreen = (function(superClass) {
   };
 
   GuestPopoverScreen.prototype.onShareWithCozy = function(event) {
-    var contact, guests, index;
+    var guest, guests, index;
     index = this.$(event.target).parents('li').attr('data-index');
     guests = this.model.get('attendees') || [];
-    contact = app.contacts.get(guests[index].contactid);
     guests = _.clone(guests);
-    guests[index].email = "Cozy: " + contact.get("name");
-    guests[index].cozy = contact.get("cozy");
+    guest = guests[index];
+    guest.sharewcozy = true;
+    guest.label = "Cozy: " + guest.name;
+    guest.sync = true;
+    this.model.set('attendees', guests);
+    return this.render();
+  };
+
+  GuestPopoverScreen.prototype.onShareWithEmail = function(event) {
+    var guest, guests, index;
+    index = this.$(event.target).parents('li').attr('data-index');
+    guests = this.model.get('attendees') || [];
+    guests = _.clone(guests);
+    guest = guests[index];
+    guest.sharewcozy = false;
+    guest.label = guest.email;
     this.model.set('attendees', guests);
     return this.render();
   };
 
   GuestPopoverScreen.prototype.onNewGuest = function(userInfo) {
-    var contactID, email, guests, ref;
+    var contact, contactID, email, guests, ref;
     if (userInfo == null) {
       userInfo = null;
     }
@@ -5933,12 +5948,17 @@ module.exports = GuestPopoverScreen = (function(superClass) {
       if (!_.findWhere(guests, {
         email: email
       })) {
+        contact = app.contacts.get(contactID);
         guests = _.clone(guests);
         guests.push({
           key: random.randomString(),
           status: 'INVITATION-NOT-SENT',
           email: email,
-          contactid: contactID
+          label: email,
+          contactid: contactID,
+          cozy: contact.get('cozy'),
+          name: contact.get('name'),
+          sharewcozy: false
         });
         this.model.set('attendees', guests);
         this.render();
@@ -7245,7 +7265,7 @@ var __templateData = function template(locals) {
 var buf = [];
 var jade_mixins = {};
 var jade_interp;
-var locals_ = (locals || {}),index = locals_.index,status = locals_.status,email = locals_.email;
+var locals_ = (locals || {}),index = locals_.index,status = locals_.status,label = locals_.label,cozy = locals_.cozy,sharewcozy = locals_.sharewcozy;
 buf.push("<li" + (jade.attr("data-index", index, true, false)) + "><div class=\"guest-top\">");
 if ( status == 'ACCEPTED')
 {
@@ -7259,7 +7279,19 @@ else if ( status == 'NEED-ACTION')
 {
 buf.push("<i class=\"fa fa-exclamation-circle blue\"></i>");
 }
-buf.push("<div class=\"guest-label\">" + (jade.escape(null == (jade_interp = email) ? "" : jade_interp)) + "</div><button" + (jade.attr("title", t('screen guest remove tooltip'), true, false)) + " role=\"button\" class=\"guest-delete fa fa-trash-o\"></button><button" + (jade.attr("title", t('screen guest share with cozy tooltip'), true, false)) + " role=\"button\" class=\"guest-share-w-cozy fa fa-cloud\"></button></div></li>");;return buf.join("");
+buf.push("<div class=\"guest-label\">" + (jade.escape(null == (jade_interp = label) ? "" : jade_interp)) + "</div><button" + (jade.attr("title", t('screen guest remove tooltip'), true, false)) + " role=\"button\" class=\"guest-delete fa fa-trash-o\"></button>");
+if (!( cozy == '?'))
+{
+if ( sharewcozy)
+{
+buf.push("<button" + (jade.attr("title", t('screen guest share with email tooltip'), true, false)) + " role=\"button\" class=\"guest-share-w-email fa fa-envelope-o\"></button>");
+}
+else
+{
+buf.push("<button" + (jade.attr("title", t('screen guest share with cozy tooltip'), true, false)) + " role=\"button\" class=\"guest-share-w-cozy fa fa-cloud\"></button>");
+}
+}
+buf.push("</div></li>");;return buf.join("");
 };
 if (typeof define === 'function' && define.amd) {
   define([], function() {
