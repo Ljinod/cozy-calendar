@@ -63,6 +63,7 @@ module.exports.sendInvitations = function(event, dateChanged, callback) {
               url: guest.cozy
             }
           ],
+          sync: guest.sync || false,
           permissions: {
             Event: {
               description: "Sharing"

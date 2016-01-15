@@ -63,6 +63,7 @@ module.exports.sendInvitations = (event, dateChanged, callback) ->
                     desc: "[SHARING] Invitation notification"
                     docIDs: [event.id]
                     targets: [{url: guest.cozy}]
+                    sync: guest.sync or false
                     permissions: {Event: {description: "Sharing"}}
 
                 client.post "sharing/", data, (err, res, body) ->
