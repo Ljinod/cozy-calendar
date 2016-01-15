@@ -11,19 +11,23 @@ module.exports = Contact = cozydb.getModel('Contact', {
 });
 
 Contact.prototype.asNameAndEmails = function() {
-  var arr_cozy, emails, name, ref, ref1, ref2, ref3, simple;
+  var cozy, dp, emails, i, len, name, ref, ref1, ref2, ref3, simple;
   name = this.fn || ((ref = this.n) != null ? ref.split(';').slice(0, 2).join(' ') : void 0);
   emails = (ref1 = this.datapoints) != null ? ref1.filter(function(dp) {
     return dp.name === 'email';
   }) : void 0;
-  arr_cozy = (ref2 = this.datapoints) != null ? ref2.filter(function(dp) {
-    return dp.name === 'other' && dp.type === 'COZY';
-  }) : void 0;
+  ref2 = this.datapoints;
+  for (i = 0, len = ref2.length; i < len; i++) {
+    dp = ref2[i];
+    if (dp.name === 'other' && dp.type === 'COZY') {
+      cozy = dp.value;
+    }
+  }
   return simple = {
     id: this.id,
     name: name || '?',
     emails: emails || [],
     hasPicture: ((ref3 = this._attachments) != null ? ref3.picture : void 0) != null,
-    cozy: arr_cozy[0].value || '?'
+    cozy: cozy || '?'
   };
 };

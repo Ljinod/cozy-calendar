@@ -12,7 +12,7 @@ Contact::asNameAndEmails = ->
     emails = @datapoints?.filter (dp) -> dp.name is 'email'
 
     # XXX What if several Cozy instances are linked to one user?
-    arr_cozy = @datapoints?.filter (dp) -> dp.name is 'other' and dp.type is 'COZY'
+    cozy = dp.value for dp in @datapoints when dp.name is 'other' and dp.type is 'COZY'
 
     return simple =
         id: @id
@@ -22,4 +22,4 @@ Contact::asNameAndEmails = ->
         # The function filter returns an array and since, in our test case,
         # there is only one cozy linked to a contact we can safely access the
         # first element of the array
-        cozy: arr_cozy[0].value or '?'
+        cozy: cozy or '?'
