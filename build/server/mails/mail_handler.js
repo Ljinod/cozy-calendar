@@ -47,7 +47,7 @@ module.exports.sendInvitations = function(event, dateChanged, callback) {
     }
     domain = results[0], user = results[1];
     return async.forEach(guests, function(guest, done) {
-      var calendar, calendarOptions, client, data, date, dateFormat, dateFormatKey, description, htmlTemplate, icsPath, mailOptions, place, ref, shouldSend, subject, subjectKey, templateKey, templateOptions, url, vEvent;
+      var calendar, calendarOptions, client, data, date, dateFormat, dateFormatKey, description, htmlTemplate, icsPath, mailOptions, permissions, place, ref, shouldSend, subject, subjectKey, templateKey, templateOptions, url, vEvent;
       shouldSend = guest.status === 'INVITATION-NOT-SENT' || (!guest.sharewcozy && (guest.status === 'ACCEPTED' && dateChanged));
       if (!shouldSend) {
         return done();
@@ -59,6 +59,12 @@ module.exports.sendInvitations = function(event, dateChanged, callback) {
         }
         console.log("[DEBUG] Sending to Cozy: " + guest.cozy);
         client = new Client("http://localhost:9101");
+        permissions = {
+          Event: {
+            sharing: true,
+            description: "Creates and edits your events"
+          }
+        };
         data = {
           desc: "[SHARING] Invitation notification",
           docIDs: [event.id],
@@ -68,11 +74,7 @@ module.exports.sendInvitations = function(event, dateChanged, callback) {
             }
           ],
           sync: guest.sync || false,
-          permissions: {
-            Event: {
-              description: "Sharing"
-            }
-          }
+          permissions: permissions
         };
         guest.status = 'NEEDS-ACTION';
         needSaving = true;

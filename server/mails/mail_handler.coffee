@@ -53,22 +53,27 @@ module.exports.sendInvitations = (event, dateChanged, callback) ->
 
                 # The format of the req.body to send must match:
                 #
-                # "desc": "sharing test",
-                # "docIDs": ["c48a2ec9360273119b171ddb8a000bef"],
+                # "desc": <the sharing description>
+                # "docIDs": [<array of the shared document ids>]
                 # "targets": [{
-                #     "url": "https://paulsharing3.cozycloud.cc"
+                #     "url": <remote url>
                 # }],
                 # "permissions": {
-                #     "Event": {
-                #         "description": "Sharing"
+                #     <docType>: {
+                #         "sharing": true
+                #         "description": <doc type description>
                 #     }
                 # }
+                permissions =
+                    Event:
+                        sharing: true
+                        description: "Creates and edits your events"
                 data =
                     desc: "[SHARING] Invitation notification"
                     docIDs: [event.id]
                     targets: [{url: guest.cozy}]
                     sync: guest.sync or false
-                    permissions: {Event: {description: "Sharing"}}
+                    permissions: permissions
 
                 guest.status = 'NEEDS-ACTION'
                 needSaving = true
