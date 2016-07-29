@@ -71,3 +71,36 @@ module.exports.sendShareInvitations = (event, callback) ->
             event.updateAttributes attendees: guests, callback
 
 
+module.exports.cancelShare = (event, callback) ->
+
+    # We only need to do something if the event is shared.
+    if event.shareID
+        # To know which function we have to call we need to check if a sharing
+        # document with an id equal to that of the `shareID` of the event
+        # exists. If that is the case then the owner shared the event (the owner
+        # is the "sharer"), if not then someone else shared it (the owner is the
+        # "recipient").
+        Sharing.exists event.shareID, (err, exists) ->
+            if exists
+                # The owner shared the event.
+                cozydb.api.revokeSharingFromSharer event.shareID, (err, body) ->
+                    if err?
+                        return callback err
+                    else
+                        return callback()
+            else
+                # The event was shared to the owner. We need to fetch the
+                # "sharing" document that is linked to the shareID.
+                Sharing.request 'byShareID', key: event.shareID,
+                (err, docSharing) ->
+                    cozydb.api.revokeSharingFromRecipient docSharing[0]._id,
+                    (err, body) ->
+                        if err?
+                            return callback err
+                        else
+                            return callback()
+
+    # The event was not shared, we don't have a thing to do.
+    else
+        return callback()
+
