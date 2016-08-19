@@ -142,15 +142,22 @@ module.exports["delete"] = function(req, res) {
       return res.status(500).send({
         error: "Server error while deleting the event"
       });
-    } else if (req.query.sendMails === 'true') {
-      return MailHandler.sendDeleteNotification(req.event, function() {
-        return res.send({
-          success: true
-        });
-      });
     } else {
-      return res.send({
-        success: true
+      return ShareHandler.cancelShare(req.event, function(err) {
+        if (err != null) {
+          log.error(err);
+        }
+        if (req.query.sendMails === 'true') {
+          return MailHandler.sendDeleteNotification(req.event, function() {
+            return res.status(201).send({
+              success: true
+            });
+          });
+        } else {
+          return res.status(201).send({
+            success: true
+          });
+        }
       });
     }
   });
