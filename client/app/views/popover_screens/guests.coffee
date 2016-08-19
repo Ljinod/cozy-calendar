@@ -234,12 +234,12 @@ module.exports = class GuestPopoverScreen extends EventPopoverScreenView
 
         # Look for a duplicate:
         # * another guest with the same email and for whom the event is not
-        # shared;
+        # shared
         if email? and (email.length > 0)
             guestBisEmail = _.findWhere guests,
                 email            : email
                 isSharedWithCozy : false
-        # * another guest with the same cozy and for whom the event is shared;
+        # * another guest with the same cozy and for whom the event is shared
         if cozy? and (cozy.length > 0)
             guestBisCozy  = _.findWhere guests,
                 cozy             : cozy

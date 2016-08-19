@@ -1,4 +1,5 @@
-cozydb    = require 'cozydb'
+cozydb  = require 'cozydb'
+Sharing = require '../models/sharing'
 
 # Polyfill to provide the function `find` if it is not already implemented
 # See : https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/
